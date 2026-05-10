@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ahmad Odeh — Nutrition Plan</title>
+<style>
+  :root{--p:#1b1b1b;--a:#c9957a;--bg:#F7F8FA;--surface:#fff;--border:#E2E4EA;--text:#1B1B1B;--muted:#6B7280}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+  .hdr{background:var(--p);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+  .hdr-brand{font-size:16px;font-weight:700}.hdr-brand span{color:var(--a)}
+  .hdr-client{font-size:13px;color:rgba(255,255,255,.5)}
+  .wrap{max-width:800px;margin:0 auto;padding:24px 16px 80px}
+  .summary{background:linear-gradient(135deg,var(--p),#252525);color:#fff;border-radius:12px;padding:22px;margin-bottom:20px}
+  .sum-name{font-size:22px;font-weight:700;margin-bottom:4px}
+  .sum-macros{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+  .sm{background:rgba(255,255,255,.05);border-radius:8px;padding:10px;text-align:center}
+  .sm-l{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.35);margin-bottom:3px}
+  .sm-v{font-size:19px;font-weight:700;font-family:monospace}
+  .sm-v.a{color:var(--a)}.sm-v.b{color:#60a5fa}.sm-v.y{color:#fbbf24}.sm-v.g{color:#1d9e75}
+  .identity{background:rgba(255,255,255,.06);border-left:3px solid var(--a);padding:8px 12px;border-radius:0 6px 6px 0;font-style:italic;font-size:13px;color:rgba(255,255,255,.6);margin-top:14px}
+  .nav-tabs{display:flex;gap:0;overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:10px 10px 0 0;margin-bottom:-1px}
+  .tab{flex:1;min-width:80px;padding:11px 6px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);transition:all .2s;white-space:nowrap;border-bottom:3px solid transparent}
+  .tab.active{color:var(--a);border-bottom-color:var(--a)}
+  .tab-content{display:none;background:var(--surface);border:1px solid var(--border);border-radius:0 0 10px 10px;padding:16px;margin-bottom:20px}
+  .tab-content.active{display:block}
+  .day-panel{margin-bottom:12px}
+  .day-header{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--a);padding:8px 12px;background:rgba(0,0,0,.03);border-radius:6px;margin-bottom:8px}
+  .meal-card{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:7px}
+  .meal-header{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;cursor:pointer;background:var(--surface);transition:background .15s}
+  .meal-header:hover{background:#f8f9fa}
+  .meal-slot{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:2px}
+  .meal-name{font-size:14px;font-weight:600}
+  .meal-stats{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+  .badge-kcal{font-size:11px;background:rgba(29,158,117,.1);color:#1d9e75;padding:2px 7px;border-radius:4px;font-weight:600;font-family:monospace}
+  .badge-m{font-size:10px;background:#f0f1f4;color:var(--muted);padding:2px 6px;border-radius:4px;font-family:monospace}
+  .meal-body{display:none;padding:14px;border-top:1px solid var(--border);background:#fafafa}
+  .meal-body.open{display:block}
+  .meal-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;margin-top:12px}
+  .meal-section-title:first-child{margin-top:0}
+  .ing-list,.steps-list{padding-left:18px;font-size:13px}
+  .ing-list li,.steps-list li{margin-bottom:3px;line-height:1.5}
+  .tip-blood,.tip-habit{margin-top:8px;font-size:12px;background:rgba(0,0,0,.03);border-left:3px solid var(--a);padding:7px 10px;border-radius:0 5px 5px 0}
+  .shop-cat{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:12px 0 6px;display:flex;align-items:center;gap:8px}
+  .shop-cat::after{content:'';flex:1;height:1px;background:var(--border)}
+  .shop-items{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+  .shop-item{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 10px;background:#f0f1f4;border-radius:6px;cursor:pointer;transition:opacity .2s}
+  .shop-item.done{opacity:.4;text-decoration:line-through}
+  .shop-item input[type=checkbox]{accent-color:var(--a);flex-shrink:0}
+  .qty{font-size:10px;color:var(--muted);margin-left:auto;font-family:monospace;flex-shrink:0}
+  .footer{text-align:center;padding:20px;font-size:12px;color:var(--muted);margin-top:20px;border-top:1px solid var(--border)}
+  @media(max-width:600px){.sum-macros{grid-template-columns:1fr 1fr}.shop-items{grid-template-columns:1fr}.meal-stats{display:none}}
+</style></head><body>
+<header class="hdr">
+  <div class="hdr-brand">Alaa Rabbat <span>Plan</span></div>
+  <div class="hdr-client">Ahmad Odeh · 30-Day Plan</div>
+</header>
+<div class="wrap">
+  <div class="summary">
+    <div class="sum-name">Ahmad Odeh</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4)">2187 kcal/day · 191g Protein · 192g Carbs · 73g Fat · 30 days</div>
+    <div class="sum-macros">
+      <div class="sm"><div class="sm-l">Calories</div><div class="sm-v a">2187</div></div>
+      <div class="sm"><div class="sm-l">Protein</div><div class="sm-v b">191g</div></div>
+      <div class="sm"><div class="sm-l">Carbs</div><div class="sm-v y">192g</div></div>
+      <div class="sm"><div class="sm-l">Fat</div><div class="sm-v g">73g</div></div>
+    </div>
+    <div class="identity">"This plan is built for someone who chooses food that energises and transforms — not someone who is 'on a diet'."</div>
+  </div>
+  <div class="nav-tabs">
+    <button class="tab active" onclick="showTab('meals',this)">📅 Meal Plan</button>
+    <button class="tab" onclick="showTab('shopping',this)">🛒 Shopping</button>
+    <button class="tab" onclick="showTab('tips',this)">🩸 Blood Sugar</button>
+    <button class="tab" onclick="showTab('habits',this)">🔁 Habits</button>
+  </div>
+  <div class="tab-content active" id="tabmeals"><div class="day-panel" id="day1">
+      <div class="day-header">Day 1</div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d0m0')">
+          <div>
+            <div class="meal-slot">Breakfast</div>
+            <div class="meal-name">Greek Yogurt Protein Bowl</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">420 kcal</span>
+            <span class="badge-m">P38g</span>
+            <span class="badge-m">C32g</span>
+            <span class="badge-m">F12g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d0m0">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>200g full-fat Greek yogurt</li><li>1 scoop whey protein (vanilla)</li><li>40g rolled oats</li><li>1 tbsp chia seeds</li><li>80g mixed berries</li><li>1 tsp honey</li><li>10g walnuts</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Layer oats at the bottom of a deep bowl.</li><li>Mix whey into yogurt until smooth; pour over oats.</li><li>Top with chia seeds and berries.</li><li>Drizzle honey; add walnuts last.</li><li>Eat oats first, then yogurt-protein layer — blood sugar sequencing.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Start with the oats to clothe the carbs — the fat and protein in yogurt blunt the glucose spike.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Keep yogurt visible on top shelf, oats beside it. 5-min assembly — zero decision fatigue.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d0m1')">
+          <div>
+            <div class="meal-slot">Lunch</div>
+            <div class="meal-name">Beef Kofta with Tabbouleh</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">560 kcal</span>
+            <span class="badge-m">P44g</span>
+            <span class="badge-m">C36g</span>
+            <span class="badge-m">F22g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d0m1">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>200g lean beef mince</li><li>½ onion, grated</li><li>2 garlic cloves</li><li>1 tsp allspice</li><li>½ tsp cinnamon</li><li>Salt, pepper</li><li>120g bulgur wheat</li><li>Large bunch parsley, finely chopped</li><li>2 tomatoes, diced</li><li>¼ cucumber, diced</li><li>3 tbsp olive oil</li><li>Juice 1 lemon</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Mix mince, onion, garlic, spices; form 8 small kofta.</li><li>Grill or pan-fry 4 min each side.</li><li>Soak bulgur in boiling water 20 min; drain, cool.</li><li>Combine bulgur, parsley, tomatoes, cucumber with oil and lemon.</li><li>Serve kofta alongside tabbouleh — eat the tabbouleh first.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Parsley is rich in antioxidants and fibre — eat tabbouleh as your green starter before the kofta.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Batch kofta and freeze raw. Cook from frozen in 12 min — perfect fridge-to-table meal.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d0m2')">
+          <div>
+            <div class="meal-slot">Dinner</div>
+            <div class="meal-name">Lamb Kofta with Fattoush</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">570 kcal</span>
+            <span class="badge-m">P40g</span>
+            <span class="badge-m">C34g</span>
+            <span class="badge-m">F26g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d0m2">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>200g lamb mince</li><li>½ onion grated</li><li>1 tsp allspice</li><li>½ tsp cumin</li><li>½ tsp cinnamon</li><li>Salt, pepper</li><li>Large romaine lettuce</li><li>3 tomatoes, diced</li><li>1 cucumber, diced</li><li>Fresh mint and parsley</li><li>2 pitta breads, torn</li><li>3 tbsp olive oil</li><li>Juice 1 lemon</li><li>1 tsp sumac</li><li>Labneh to serve</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Mix lamb, onion, spices; form 8 kofta around skewers.</li><li>Grill 4–5 min per side.</li><li>Toast pitta pieces in oven 8 min at 190°C until crispy.</li><li>Toss lettuce, tomatoes, cucumber, herbs with oil and lemon.</li><li>Add crispy pitta last; dust with sumac. Serve kofta alongside labneh.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Fattoush is sequenced correctly — eat the salad in full before the kofta, and the pitta last.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Kofta freeze well raw. Make 20 on Sunday — weeknight meal in 10 min from frozen.</div>
+        </div>
+      </div></div><div class="day-panel" id="day2">
+      <div class="day-header">Day 2</div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d1m0')">
+          <div>
+            <div class="meal-slot">Breakfast</div>
+            <div class="meal-name">Turkish Egg Menemen</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">480 kcal</span>
+            <span class="badge-m">P32g</span>
+            <span class="badge-m">C18g</span>
+            <span class="badge-m">F28g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d1m0">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>3 large eggs</li><li>1 medium tomato, diced</li><li>½ green pepper, diced</li><li>1 small onion, diced</li><li>2 tbsp olive oil</li><li>1 tsp cumin</li><li>½ tsp paprika</li><li>Fresh parsley</li><li>2 slices sourdough</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Sauté onion and pepper in olive oil on medium heat for 5 min.</li><li>Add tomato and spices; cook until soft (5 min).</li><li>Create 3 wells; crack eggs in. Don't stir — soft scramble.</li><li>Cover and cook 3–4 min until whites set, yolks soft.</li><li>Serve with sourdough — eat eggs before bread.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Eat the vegetables and eggs before the sourdough. Protein and fat first = 30% lower glucose spike.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Batch the tomato-pepper base Sunday evening — morning cook time drops to 7 minutes.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d1m1')">
+          <div>
+            <div class="meal-slot">Lunch</div>
+            <div class="meal-name">Asian Chicken Salad</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">440 kcal</span>
+            <span class="badge-m">P40g</span>
+            <span class="badge-m">C28g</span>
+            <span class="badge-m">F14g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d1m1">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>150g chicken breast, poached</li><li>100g mixed salad leaves</li><li>1 carrot, julienned</li><li>½ red cabbage, shredded</li><li>3 spring onions</li><li>1 tbsp sesame seeds</li><li>Fresh coriander</li><li>2 tbsp rice vinegar</li><li>1 tbsp soy sauce</li><li>1 tsp sesame oil</li><li>1 tsp honey</li><li>1 tsp fresh ginger, grated</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Poach chicken 12 min; shred with forks.</li><li>Whisk dressing: vinegar, soy, sesame oil, honey, ginger.</li><li>Toss leaves, carrot, cabbage with dressing.</li><li>Top with chicken, spring onions, sesame, coriander.</li><li>Eat the greens first before the chicken.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> The vinegar in the dressing is Inchauspé's vinegar hack — add 1 tbsp to a glass of water before this meal.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Use rotisserie chicken and pre-shredded slaw mix — 6 min total.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d1m2')">
+          <div>
+            <div class="meal-slot">Dinner</div>
+            <div class="meal-name">One-Pan Chicken Thighs</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">530 kcal</span>
+            <span class="badge-m">P44g</span>
+            <span class="badge-m">C22g</span>
+            <span class="badge-m">F28g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d1m2">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>2 bone-in chicken thighs (300g)</li><li>300g baby potatoes, halved</li><li>200g green beans</li><li>1 head garlic</li><li>4 tbsp olive oil</li><li>1 lemon, sliced</li><li>Fresh rosemary and thyme</li><li>1 tsp smoked paprika</li><li>Salt, pepper</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Preheat oven 210°C.</li><li>Rub chicken with oil, paprika, salt, pepper.</li><li>Arrange potatoes, beans, garlic in roasting tray; season.</li><li>Place chicken skin-up on top of veg.</li><li>Lay lemon slices and herbs. Roast 35 min — skin should be golden.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Eat the green beans first while the chicken rests — fibre first, then protein, then potatoes last.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> One tray, one wash-up. Double the recipe — reheat next day in 3 min.</div>
+        </div>
+      </div></div><div class="day-panel" id="day3">
+      <div class="day-header">Day 3</div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d2m0')">
+          <div>
+            <div class="meal-slot">Breakfast</div>
+            <div class="meal-name">Salmon Avocado Power Plate</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">510 kcal</span>
+            <span class="badge-m">P42g</span>
+            <span class="badge-m">C8g</span>
+            <span class="badge-m">F34g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d2m0">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>130g smoked salmon</li><li>1 large avocado, sliced</li><li>3 boiled eggs</li><li>1 tbsp capers</li><li>½ lemon</li><li>Handful rocket/arugula</li><li>1 tsp olive oil</li><li>Black pepper</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Arrange rocket on plate as base — fiber first.</li><li>Layer salmon and egg slices.</li><li>Fan avocado alongside.</li><li>Scatter capers; squeeze lemon.</li><li>Drizzle olive oil; crack black pepper.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Rocket first, then salmon+eggs, then avocado — pure Inchauspé sequencing with zero carbs to spike.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Pre-boil 6 eggs on Sunday. Assemble in 4 minutes — perfect for busy mornings.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d2m1')">
+          <div>
+            <div class="meal-slot">Lunch</div>
+            <div class="meal-name">Lentil Soup with Sourdough</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">490 kcal</span>
+            <span class="badge-m">P26g</span>
+            <span class="badge-m">C68g</span>
+            <span class="badge-m">F10g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d2m1">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>200g red lentils</li><li>1 large onion, diced</li><li>3 garlic cloves</li><li>2 carrots, diced</li><li>2 tomatoes, diced</li><li>1 tsp cumin</li><li>1 tsp turmeric</li><li>½ tsp coriander</li><li>3 tbsp olive oil</li><li>1L vegetable stock</li><li>Lemon juice</li><li>Fresh parsley</li><li>2 slices sourdough</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Sauté onion and garlic in olive oil 5 min.</li><li>Add carrots, tomatoes, spices — cook 3 min.</li><li>Add lentils and stock; bring to boil.</li><li>Simmer 20 min until lentils dissolve.</li><li>Blend half, return to pot. Finish with lemon.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Lentils are among the lowest GI foods available — 30-minute post-meal walk amplifies their effect.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Make a 4-portion batch — reheat in 2 min all week.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d2m2')">
+          <div>
+            <div class="meal-slot">Dinner</div>
+            <div class="meal-name">Prawn &amp; Spinach Curry</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">480 kcal</span>
+            <span class="badge-m">P38g</span>
+            <span class="badge-m">C36g</span>
+            <span class="badge-m">F16g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d2m2">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>200g king prawns</li><li>200g baby spinach</li><li>400ml light coconut milk</li><li>200g tinned tomatoes</li><li>1 onion</li><li>3 garlic cloves</li><li>1 tbsp fresh ginger</li><li>2 tbsp curry powder</li><li>1 tsp turmeric</li><li>1 tsp cumin</li><li>2 tbsp coconut oil</li><li>120g basmati rice</li><li>Coriander</li><li>Lime</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Cook rice as directed.</li><li>Sauté onion, garlic, ginger in coconut oil 6 min.</li><li>Add spices; toast 1 min.</li><li>Add tomatoes and coconut milk; simmer 8 min.</li><li>Add prawns and spinach; cook 4 min until prawns pink.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Turmeric is one of Dr. Hyman's top anti-inflammatory foods — this meal is therapeutic nutrition.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Sauce can be made in advance and frozen. Add fresh prawns and spinach when reheating.</div>
+        </div>
+      </div></div><div class="day-panel" id="day4">
+      <div class="day-header">Day 4</div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d3m0')">
+          <div>
+            <div class="meal-slot">Breakfast</div>
+            <div class="meal-name">Overnight Oats with Nut Butter</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">450 kcal</span>
+            <span class="badge-m">P22g</span>
+            <span class="badge-m">C52g</span>
+            <span class="badge-m">F16g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d3m0">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>80g rolled oats</li><li>240ml unsweetened almond milk</li><li>30g vanilla whey protein</li><li>1 tbsp almond butter</li><li>1 banana, sliced</li><li>1 tbsp chia seeds</li><li>½ tsp cinnamon</li><li>1 tsp maple syrup</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Combine oats, almond milk, protein powder, chia and cinnamon in jar.</li><li>Stir well; seal and refrigerate overnight.</li><li>Morning: top with banana slices and almond butter.</li><li>Drizzle maple syrup last.</li><li>Mix the nut butter in first — fat before carbs = better glucose curve.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Stir the almond butter through first so every spoonful has fat coating the oat carbs.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Make 5 jars Sunday night. Grab and go all week — fridgeReady.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d3m1')">
+          <div>
+            <div class="meal-slot">Lunch</div>
+            <div class="meal-name">Turkey Stuffed Peppers</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">500 kcal</span>
+            <span class="badge-m">P42g</span>
+            <span class="badge-m">C34g</span>
+            <span class="badge-m">F16g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d3m1">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>2 large bell peppers</li><li>200g turkey mince</li><li>100g cooked brown rice</li><li>1 tin diced tomatoes</li><li>1 onion, diced</li><li>2 garlic cloves</li><li>1 tsp Italian herbs</li><li>50g mozzarella, grated</li><li>2 tbsp olive oil</li><li>Salt, pepper</li><li>Fresh basil</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Halve peppers; remove seeds. Brush with oil.</li><li>Sauté onion and garlic 5 min; add turkey, brown 5 min.</li><li>Add tomatoes, rice, herbs; simmer 5 min.</li><li>Fill pepper halves with mixture; top with mozzarella.</li><li>Bake 25 min at 200°C until peppers are tender.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> The pepper acts as a natural fiber wrap — all carbs are inside a vegetable container.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Prep and fill peppers in advance; refrigerate unbaked. Cook when needed.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d3m2')">
+          <div>
+            <div class="meal-slot">Dinner</div>
+            <div class="meal-name">Baked Salmon with Roast Veg</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">540 kcal</span>
+            <span class="badge-m">P44g</span>
+            <span class="badge-m">C24g</span>
+            <span class="badge-m">F28g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d3m2">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>180g salmon fillet</li><li>1 large courgette, chunks</li><li>1 red pepper, chunks</li><li>1 red onion, wedges</li><li>150g cherry tomatoes</li><li>2 tbsp olive oil</li><li>2 garlic cloves</li><li>1 lemon</li><li>Fresh dill and parsley</li><li>1 tsp oregano</li><li>Salt, pepper</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Preheat oven 200°C. Toss veg with 1 tbsp olive oil, garlic, oregano; spread on tray.</li><li>Roast veg 15 min first.</li><li>Place salmon on tray; drizzle remaining oil; season.</li><li>Bake 12–15 min until salmon flakes easily.</li><li>Finish with fresh herbs and lemon squeeze.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Omega-3s from salmon reduce inflammation AND improve insulin sensitivity — Dr. Rhonda Patrick's top food.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Prep veg on Sunday. Weeknight assembly: 3 min to tray, 30 min hands-off cooking.</div>
+        </div>
+      </div></div><div class="day-panel" id="day5">
+      <div class="day-header">Day 5</div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d4m0')">
+          <div>
+            <div class="meal-slot">Breakfast</div>
+            <div class="meal-name">Shakshuka with Chickpeas</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">460 kcal</span>
+            <span class="badge-m">P28g</span>
+            <span class="badge-m">C38g</span>
+            <span class="badge-m">F18g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d4m0">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>3 eggs</li><li>200g tinned chickpeas</li><li>400g passata</li><li>1 onion</li><li>2 garlic cloves</li><li>1 red pepper</li><li>2 tsp harissa</li><li>1 tsp cumin</li><li>1 tsp smoked paprika</li><li>Fresh coriander</li><li>2 tbsp olive oil</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Heat oil; fry onion, garlic, and pepper 7 min.</li><li>Add harissa, cumin, paprika — toast 1 min.</li><li>Add passata and chickpeas; simmer 10 min.</li><li>Make 3 wells; crack eggs in. Cover, cook 5 min.</li><li>Scatter coriander and serve.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Chickpeas are low-GI — they clothe the tomato sugars. The eggs slow absorption further.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Keep passata and chickpeas in pantry. Zero shopping needed — pantry meal.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d4m1')">
+          <div>
+            <div class="meal-slot">Lunch</div>
+            <div class="meal-name">Shrimp &amp; Avocado Wrap</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">470 kcal</span>
+            <span class="badge-m">P36g</span>
+            <span class="badge-m">C38g</span>
+            <span class="badge-m">F16g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d4m1">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>180g cooked king shrimp</li><li>1 large whole-grain wrap</li><li>1 avocado, mashed</li><li>1 cup mixed leaves</li><li>1 tomato, sliced</li><li>¼ red onion, sliced</li><li>2 tbsp Greek yogurt</li><li>1 lime</li><li>Hot sauce</li><li>Cumin, salt, pepper</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Season shrimp with cumin, salt, lime juice.</li><li>Spread mashed avocado on wrap.</li><li>Layer leaves, tomato, red onion.</li><li>Add shrimp; drizzle yogurt and hot sauce.</li><li>Roll tightly; slice diagonally.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Eat the filling first if possible — wrap last, or choose a lettuce wrap for near-zero carb.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Keep frozen cooked shrimp stocked — defrost in 3 min in cold water.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d4m2')">
+          <div>
+            <div class="meal-slot">Dinner</div>
+            <div class="meal-name">Chicken Breast &amp; Tabbouleh</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">490 kcal</span>
+            <span class="badge-m">P46g</span>
+            <span class="badge-m">C36g</span>
+            <span class="badge-m">F14g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d4m2">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>180g chicken breast</li><li>120g bulgur wheat</li><li>Large bunch flat-leaf parsley</li><li>3 spring onions</li><li>2 tomatoes</li><li>½ cucumber</li><li>3 tbsp olive oil</li><li>Juice 2 lemons</li><li>Salt, cumin</li><li>Pomegranate seeds optional</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Cook bulgur: pour boiling water over, cover 20 min, drain, cool.</li><li>Season chicken; grill 6 min per side; slice.</li><li>Finely chop parsley, spring onions, tomatoes, cucumber.</li><li>Mix with bulgur, olive oil, lemon, salt, cumin.</li><li>Serve tabbouleh generously; place chicken alongside.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Eat all the tabbouleh before the chicken — the parsley and cucumber fibre prime your gut for protein absorption.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Bulgur cooks passively. Double the batch: tabbouleh keeps 3 days refrigerated.</div>
+        </div>
+      </div></div><div class="day-panel" id="day6">
+      <div class="day-header">Day 6</div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d5m0')">
+          <div>
+            <div class="meal-slot">Breakfast</div>
+            <div class="meal-name">Protein Pancakes</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">430 kcal</span>
+            <span class="badge-m">P36g</span>
+            <span class="badge-m">C42g</span>
+            <span class="badge-m">F10g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d5m0">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>2 scoops vanilla whey protein</li><li>2 eggs</li><li>1 banana</li><li>50g oat flour</li><li>120ml milk</li><li>1 tsp baking powder</li><li>½ tsp vanilla extract</li><li>Handful blueberries</li><li>2 tbsp plain Greek yogurt</li><li>1 tsp honey</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Blend all batter ingredients until smooth.</li><li>Rest 5 min so oat flour hydrates.</li><li>Pour palm-sized circles on medium non-stick pan.</li><li>Cook 2–3 min per side until golden.</li><li>Stack, top with yogurt and blueberries, drizzle honey.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Eat one pancake with yogurt before the rest — protein-fat primer blunts the glucose from oats.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Batch and freeze. Reheat in 90 seconds from frozen — weekend meal prep trick.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d5m1')">
+          <div>
+            <div class="meal-slot">Lunch</div>
+            <div class="meal-name">Grilled Chicken Quinoa Bowl</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">520 kcal</span>
+            <span class="badge-m">P48g</span>
+            <span class="badge-m">C42g</span>
+            <span class="badge-m">F14g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d5m1">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>160g chicken breast</li><li>120g cooked quinoa</li><li>Large handful baby spinach</li><li>1 cucumber, diced</li><li>1 tomato, diced</li><li>¼ red onion</li><li>50g hummus</li><li>1 lemon</li><li>1 tbsp olive oil</li><li>Za'atar, salt, pepper</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Season chicken with za'atar, salt, pepper; grill 6 min each side.</li><li>Rest 5 min; slice against grain.</li><li>Build bowl: spinach base, then quinoa.</li><li>Top with cucumber, tomato, red onion.</li><li>Place chicken slices; add hummus; drizzle oil and lemon.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Eat spinach first, then chicken, then quinoa — 40% lower post-meal glucose vs. eating in reverse.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Grill 4 breasts at once. This bowl takes 4 minutes to assemble from prep.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d5m2')">
+          <div>
+            <div class="meal-slot">Dinner</div>
+            <div class="meal-name">Beef Stir-Fry with Broccoli</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">510 kcal</span>
+            <span class="badge-m">P42g</span>
+            <span class="badge-m">C32g</span>
+            <span class="badge-m">F20g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d5m2">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>180g lean beef strips</li><li>200g broccoli florets</li><li>1 red pepper</li><li>2 spring onions</li><li>3 garlic cloves, minced</li><li>1 tbsp ginger, grated</li><li>2 tbsp soy sauce</li><li>1 tbsp oyster sauce</li><li>1 tsp sesame oil</li><li>1 tsp cornstarch</li><li>120g cooked jasmine rice</li><li>Sesame seeds</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Marinate beef in soy, cornstarch, garlic, ginger 10 min.</li><li>Blanch broccoli 2 min; set aside.</li><li>High heat wok: sear beef 2 min until browned; remove.</li><li>Stir-fry pepper and broccoli 3 min.</li><li>Return beef; add sauces; toss 1 min. Finish with sesame oil.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Broccoli is Dr. Rhonda Patrick's sulforaphane superfood — eat it before the rice for optimal glucose response.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Batch prep: slice beef Sunday, store in marinade. Stir-fry is a 10-min weeknight meal.</div>
+        </div>
+      </div></div><div class="day-panel" id="day7">
+      <div class="day-header">Day 7</div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d6m0')">
+          <div>
+            <div class="meal-slot">Breakfast</div>
+            <div class="meal-name">Smoked Salmon Omelette</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">440 kcal</span>
+            <span class="badge-m">P40g</span>
+            <span class="badge-m">C4g</span>
+            <span class="badge-m">F28g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d6m0">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>4 eggs</li><li>80g smoked salmon</li><li>30g cream cheese</li><li>Handful baby spinach</li><li>1 tbsp olive oil</li><li>Fresh dill</li><li>Salt and black pepper</li><li>Lemon wedge</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Whisk eggs with salt and pepper.</li><li>Heat oil in 22cm pan; pour eggs, swirl to coat.</li><li>When 80% set, add spinach and salmon on one half.</li><li>Dot with cream cheese; fold over.</li><li>Slide onto plate, top with dill and squeeze lemon.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Zero carb omelette — no glucose spike at all. This is Inchauspé's dream breakfast.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Break 4 eggs into a container Sunday — just pour and cook in the morning.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d6m1')">
+          <div>
+            <div class="meal-slot">Lunch</div>
+            <div class="meal-name">Tuna Niçoise Salad</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">480 kcal</span>
+            <span class="badge-m">P42g</span>
+            <span class="badge-m">C28g</span>
+            <span class="badge-m">F20g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d6m1">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>2 cans tuna in olive oil (160g total)</li><li>3 boiled eggs</li><li>150g green beans, blanched</li><li>200g baby potatoes, boiled</li><li>10 black olives</li><li>8 cherry tomatoes</li><li>Lettuce leaves</li><li>2 tbsp extra-virgin olive oil</li><li>1 tbsp red wine vinegar</li><li>1 tsp Dijon mustard</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Blanch green beans 3 min; refresh in cold water.</li><li>Arrange lettuce as base layer.</li><li>Add beans, potatoes, halved eggs, tomatoes, olives.</li><li>Flake tuna over top.</li><li>Whisk oil, vinegar, mustard for dressing; drizzle over.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Eat the greens and eggs before the potatoes — the fibre matrix slows potato glucose release.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Keep tinned tuna stocked. Pre-boil eggs and potatoes Sunday — 5 min assembly.</div>
+        </div>
+      </div><div class="meal-card">
+        <div class="meal-header" onclick="toggleMeal('d6m2')">
+          <div>
+            <div class="meal-slot">Dinner</div>
+            <div class="meal-name">Baked Cod with Lemon Herbs</div>
+          </div>
+          <div class="meal-stats">
+            <span class="badge-kcal">430 kcal</span>
+            <span class="badge-m">P48g</span>
+            <span class="badge-m">C18g</span>
+            <span class="badge-m">F14g</span>
+          </div>
+        </div>
+        <div class="meal-body" id="d6m2">
+          <div class="meal-section-title">Ingredients</div>
+          <ul class="ing-list"><li>200g cod fillet</li><li>150g asparagus</li><li>100g cherry tomatoes</li><li>2 tbsp olive oil</li><li>3 garlic cloves, sliced</li><li>Zest and juice 1 lemon</li><li>Fresh thyme and parsley</li><li>Capers</li><li>Salt, pepper</li><li>80g cooked quinoa</li></ul>
+          <div class="meal-section-title">Method</div>
+          <ol class="steps-list"><li>Preheat oven 200°C. Place cod in baking dish.</li><li>Arrange asparagus and tomatoes around fish.</li><li>Mix olive oil, garlic, lemon zest, herbs; pour over.</li><li>Scatter capers; season well.</li><li>Bake 18–20 min until cod is flaky and asparagus is tender.</li></ol>
+          <div class="tip-blood"><strong>🩸 Blood Sugar Tip:</strong> Asparagus feeds beneficial gut bacteria (prebiotic) — Dr. Hyman approved. Eat before the quinoa.</div>
+          <div class="tip-habit"><strong>🔁 Habit Tip:</strong> Prepare the herb oil in advance and refrigerate up to 5 days — pour and bake.</div>
+        </div>
+      </div></div></div>
+  <div class="tab-content" id="tabshopping"><div class="shop-cat">🥩 Proteins</div><div class="shop-items"><label class="shop-item" id="shProteins0">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Chicken breast</span>
+        <span class="qty">1.2 kg</span>
+      </label><label class="shop-item" id="shProteins1">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Salmon fillets</span>
+        <span class="qty">600g</span>
+      </label><label class="shop-item" id="shProteins2">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Lean beef mince</span>
+        <span class="qty">400g</span>
+      </label><label class="shop-item" id="shProteins3">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Eggs</span>
+        <span class="qty">18</span>
+      </label><label class="shop-item" id="shProteins4">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Greek yogurt (full-fat)</span>
+        <span class="qty">800g</span>
+      </label><label class="shop-item" id="shProteins5">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Smoked salmon</span>
+        <span class="qty">200g</span>
+      </label><label class="shop-item" id="shProteins6">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Tinned tuna (in olive oil)</span>
+        <span class="qty">4 cans</span>
+      </label><label class="shop-item" id="shProteins7">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Cottage cheese</span>
+        <span class="qty">300g</span>
+      </label><label class="shop-item" id="shProteins8">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Turkey mince</span>
+        <span class="qty">400g</span>
+      </label><label class="shop-item" id="shProteins9">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>King prawns (cooked)</span>
+        <span class="qty">400g</span>
+      </label></div><div class="shop-cat">🥦 Vegetables</div><div class="shop-items"><label class="shop-item" id="shVegetables0">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Baby spinach</span>
+        <span class="qty">300g</span>
+      </label><label class="shop-item" id="shVegetables1">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Broccoli</span>
+        <span class="qty">400g</span>
+      </label><label class="shop-item" id="shVegetables2">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Cherry tomatoes</span>
+        <span class="qty">500g</span>
+      </label><label class="shop-item" id="shVegetables3">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Courgette</span>
+        <span class="qty">2 medium</span>
+      </label><label class="shop-item" id="shVegetables4">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Red and yellow peppers</span>
+        <span class="qty">4 total</span>
+      </label><label class="shop-item" id="shVegetables5">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Cucumber</span>
+        <span class="qty">2</span>
+      </label><label class="shop-item" id="shVegetables6">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Asparagus</span>
+        <span class="qty">300g</span>
+      </label><label class="shop-item" id="shVegetables7">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Green beans</span>
+        <span class="qty">300g</span>
+      </label><label class="shop-item" id="shVegetables8">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Mixed salad leaves</span>
+        <span class="qty">200g</span>
+      </label><label class="shop-item" id="shVegetables9">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Parsley + coriander</span>
+        <span class="qty">2 bunches each</span>
+      </label><label class="shop-item" id="shVegetables10">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Rocket / arugula</span>
+        <span class="qty">100g</span>
+      </label><label class="shop-item" id="shVegetables11">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Red onions</span>
+        <span class="qty">3</span>
+      </label><label class="shop-item" id="shVegetables12">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Garlic</span>
+        <span class="qty">1 bulb</span>
+      </label><label class="shop-item" id="shVegetables13">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Carrots</span>
+        <span class="qty">4</span>
+      </label></div><div class="shop-cat">🌾 Grains & Carbs</div><div class="shop-items"><label class="shop-item" id="shGrainsampCarbs0">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Quinoa</span>
+        <span class="qty">400g</span>
+      </label><label class="shop-item" id="shGrainsampCarbs1">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Rolled oats</span>
+        <span class="qty">500g</span>
+      </label><label class="shop-item" id="shGrainsampCarbs2">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Bulgur wheat</span>
+        <span class="qty">300g</span>
+      </label><label class="shop-item" id="shGrainsampCarbs3">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Brown rice</span>
+        <span class="qty">500g</span>
+      </label><label class="shop-item" id="shGrainsampCarbs4">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Sourdough bread</span>
+        <span class="qty">1 loaf</span>
+      </label><label class="shop-item" id="shGrainsampCarbs5">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Whole-grain wraps</span>
+        <span class="qty">1 pack</span>
+      </label><label class="shop-item" id="shGrainsampCarbs6">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Oat flour</span>
+        <span class="qty">250g</span>
+      </label><label class="shop-item" id="shGrainsampCarbs7">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Baby potatoes</span>
+        <span class="qty">400g</span>
+      </label></div><div class="shop-cat">🫒 Fats & Nuts</div><div class="shop-items"><label class="shop-item" id="shFatsampNuts0">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Extra-virgin olive oil</span>
+        <span class="qty">500ml</span>
+      </label><label class="shop-item" id="shFatsampNuts1">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Avocados</span>
+        <span class="qty">4</span>
+      </label><label class="shop-item" id="shFatsampNuts2">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Almond butter</span>
+        <span class="qty">1 jar</span>
+      </label><label class="shop-item" id="shFatsampNuts3">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Mixed nuts (walnuts, almonds)</span>
+        <span class="qty">200g</span>
+      </label><label class="shop-item" id="shFatsampNuts4">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Chia seeds</span>
+        <span class="qty">150g</span>
+      </label><label class="shop-item" id="shFatsampNuts5">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Pumpkin seeds</span>
+        <span class="qty">100g</span>
+      </label><label class="shop-item" id="shFatsampNuts6">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Sesame seeds</span>
+        <span class="qty">50g</span>
+      </label><label class="shop-item" id="shFatsampNuts7">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Coconut oil</span>
+        <span class="qty">200ml</span>
+      </label></div><div class="shop-cat">🧀 Dairy & Alternatives</div><div class="shop-items"><label class="shop-item" id="shDairyampAlternatives0">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Unsweetened almond milk</span>
+        <span class="qty">1L</span>
+      </label><label class="shop-item" id="shDairyampAlternatives1">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Whey protein powder (vanilla)</span>
+        <span class="qty">1 tub (1kg)</span>
+      </label><label class="shop-item" id="shDairyampAlternatives2">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Cream cheese</span>
+        <span class="qty">100g</span>
+      </label><label class="shop-item" id="shDairyampAlternatives3">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Feta cheese</span>
+        <span class="qty">150g</span>
+      </label><label class="shop-item" id="shDairyampAlternatives4">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Labneh</span>
+        <span class="qty">200g</span>
+      </label><label class="shop-item" id="shDairyampAlternatives5">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Mozzarella</span>
+        <span class="qty">125g</span>
+      </label></div><div class="shop-cat">🧂 Pantry & Condiments</div><div class="shop-items"><label class="shop-item" id="shPantryampCondiments0">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Passata (tomato)</span>
+        <span class="qty">2 bottles</span>
+      </label><label class="shop-item" id="shPantryampCondiments1">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Tinned chickpeas</span>
+        <span class="qty">2 cans</span>
+      </label><label class="shop-item" id="shPantryampCondiments2">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Tinned diced tomatoes</span>
+        <span class="qty">3 cans</span>
+      </label><label class="shop-item" id="shPantryampCondiments3">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Red lentils</span>
+        <span class="qty">300g</span>
+      </label><label class="shop-item" id="shPantryampCondiments4">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Hummus</span>
+        <span class="qty">200g</span>
+      </label><label class="shop-item" id="shPantryampCondiments5">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Harissa paste</span>
+        <span class="qty">1 jar</span>
+      </label><label class="shop-item" id="shPantryampCondiments6">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Za'atar</span>
+        <span class="qty">1 jar</span>
+      </label><label class="shop-item" id="shPantryampCondiments7">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Cumin, coriander, turmeric, paprika</span>
+        <span class="qty">as needed</span>
+      </label><label class="shop-item" id="shPantryampCondiments8">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Apple cider vinegar</span>
+        <span class="qty">500ml</span>
+      </label><label class="shop-item" id="shPantryampCondiments9">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Soy sauce / coconut aminos</span>
+        <span class="qty">1 bottle</span>
+      </label><label class="shop-item" id="shPantryampCondiments10">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Honey (raw)</span>
+        <span class="qty">1 jar</span>
+      </label><label class="shop-item" id="shPantryampCondiments11">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Dijon mustard</span>
+        <span class="qty">1 jar</span>
+      </label><label class="shop-item" id="shPantryampCondiments12">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Capers</span>
+        <span class="qty">1 jar</span>
+      </label><label class="shop-item" id="shPantryampCondiments13">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('done',this.checked)">
+        <span>Vegetable stock</span>
+        <span class="qty">1L</span>
+      </label></div></div>
+  <div class="tab-content" id="tabtips">
+    <div style="border:1px solid #e2e4ea;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#c9957a;margin-bottom:4px;font-family:monospace">Day 1 — Monday</div>
+      <div style="font-size:14px;line-height:1.6">Start today with a savoury breakfast — no fruit juice, no toast alone, no cereal. Protein and fat first meal resets your glucose baseline for the entire week.</div>
+    </div><div style="border:1px solid #e2e4ea;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#c9957a;margin-bottom:4px;font-family:monospace">Day 2 — Tuesday</div>
+      <div style="font-size:14px;line-height:1.6">Add 1 tbsp apple cider vinegar in a large glass of water before your biggest meal. This single habit can reduce your post-meal glucose spike by up to 30%.</div>
+    </div><div style="border:1px solid #e2e4ea;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#c9957a;margin-bottom:4px;font-family:monospace">Day 3 — Wednesday</div>
+      <div style="font-size:14px;line-height:1.6">Move after eating today — even a 10-minute walk after lunch pulls glucose from the bloodstream directly into muscle cells. No gym required.</div>
+    </div><div style="border:1px solid #e2e4ea;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#c9957a;margin-bottom:4px;font-family:monospace">Day 4 — Thursday</div>
+      <div style="font-size:14px;line-height:1.6">Eat your salad or vegetables in full before adding any protein or carbs to your plate. Sequence every meal today: Greens → Protein → Starch.</div>
+    </div><div style="border:1px solid #e2e4ea;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#c9957a;margin-bottom:4px;font-family:monospace">Day 5 — Friday</div>
+      <div style="font-size:14px;line-height:1.6">'Clothe your carbs' — never eat rice, bread, or pasta naked. Always pair with protein, healthy fat, and fibre at the same meal.</div>
+    </div><div style="border:1px solid #e2e4ea;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#c9957a;margin-bottom:4px;font-family:monospace">Day 6 — Saturday</div>
+      <div style="font-size:14px;line-height:1.6">Eating out today? Order a side salad first; eat it entirely. Then have your main. This simple habit works in any restaurant in the world.</div>
+    </div><div style="border:1px solid #e2e4ea;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#c9957a;margin-bottom:4px;font-family:monospace">Day 7 — Sunday</div>
+      <div style="font-size:14px;line-height:1.6">End the week with a savoury or protein-first breakfast. Notice how your energy is different from a sweet cereal start. This is what stable glucose feels like.</div>
+    </div>
+  </div>
+  <div class="tab-content" id="tabhabits">
+    <div style="background:rgba(0,0,0,.03);border-left:4px solid #c9957a;padding:12px 14px;border-radius:0 8px 8px 0;font-style:italic;font-size:14px;margin-bottom:16px">
+      "This plan is built for someone who chooses food that energises and transforms — not someone who is 'on a diet'."
+    </div>
+    <div style="font-size:13px;color:#6b7280;margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Week 1 Focus</div>
+    <div style="font-size:14px;line-height:1.7">Master the savoury breakfast habit — no sweet starts for 7 days.</div>
+  </div>
+  <div class="footer">Prepared by Alaa Rabbat · alaarabbat.com · 10/05/2026<br>Generated by Alaa Rabbat</div>
+</div>
+<script>
+function showTab(name,btn){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab'+name).classList.add('active');
+  btn.classList.add('active');
+}
+function toggleMeal(id){
+  const b=document.getElementById(id);
+  if(b) b.classList.toggle('open');
+}
+</script></body></html>
